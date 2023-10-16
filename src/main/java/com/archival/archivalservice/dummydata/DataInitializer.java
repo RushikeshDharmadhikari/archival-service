@@ -3,20 +3,32 @@ package com.archival.archivalservice.dummydata;
 import java.util.ArrayList;
 import java.util.Calendar;
 import java.util.Date;
+import java.util.HashSet;
 import java.util.List;
+import java.util.Set;
 
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.boot.CommandLineRunner;
+import org.springframework.security.crypto.password.PasswordEncoder;
 import org.springframework.stereotype.Component;
 
+import com.archival.archivalservice.dto.Role;
 import com.archival.archivalservice.entity.Student;
+import com.archival.archivalservice.entity.User;
 import com.archival.archivalservice.repository.StudentRepository;
+import com.archival.archivalservice.repository.UserRepository;
 
 @Component
 public class DataInitializer implements CommandLineRunner {
 
 	@Autowired
 	StudentRepository studentRepository;
+	
+	@Autowired
+	UserRepository userRepository;
+	
+	@Autowired
+	private PasswordEncoder passwordEncoder;
 
 	@Override
 	public void run(String... args) throws Exception {
@@ -76,5 +88,26 @@ public class DataInitializer implements CommandLineRunner {
 
 		studentRepository.saveAll(studentList);
 
+		User adminUser = new User();
+		adminUser.setUsername("admin");
+		adminUser.setPassword("admin");
+		String encodedPassword = passwordEncoder.encode(adminUser.getPassword());
+		adminUser.setPassword(encodedPassword);
+		Set<Role> roles = new HashSet<Role>();
+		roles.add(Role.ADMIN);
+		adminUser.setRoles(roles);
+		userRepository.save(adminUser);
+	
+		User student = new User();
+		student.setUsername("student");
+		student.setPassword("student");
+		String studentPassword = passwordEncoder.encode(student.getPassword());
+		student.setPassword(studentPassword);
+		Set<Role> roles1 = new HashSet<Role>();
+		roles1.add(Role.STUDENT);
+		student.setRoles(roles1);
+		userRepository.save(student);
+		
+		
 	}
 }
